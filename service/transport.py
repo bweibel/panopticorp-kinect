@@ -12,8 +12,9 @@ _clients: set[ServerConnection] = set()
 def pack_cloud(frame_id: int, points: np.ndarray) -> bytes:
     """Binary frame: [uint32 frameId][uint16 numPoints][int16 x,y,z * N]"""
     n = len(points)
-    header = struct.pack(">IH", frame_id, n)
-    body = points.astype(np.int16).tobytes() if n > 0 else b""
+    # little-endian throughout — matches x86 native and lets JS read Int16Array directly
+    header = struct.pack("<IH", frame_id, n)
+    body = points.astype("<i2").tobytes() if n > 0 else b""
     return header + body
 
 
